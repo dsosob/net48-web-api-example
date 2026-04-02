@@ -1,6 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using WebApiExample.Common.DataAccess;
@@ -10,28 +9,22 @@ namespace WebApiExample.DataStore
 {
     public class UserContext : DbContext, IUnitOfWork
     {
-        public UserContext()
+        public UserContext(DbContextOptions<UserContext> options) : base(options)
         {
-            Database.SetInitializer(
-                new CreateDatabaseIfNotExists<UserContext>());
         }
-
-        #region DbSets
 
         public DbSet<User> Users { get; set; }
 
-        #endregion
-
-        protected override void OnModelCreating(DbModelBuilder builder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<User>()
                 .Property(u => u.Id)
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.Identity);
+                .ValueGeneratedOnAdd();
         }
 
         public T Add<T>(T entity) where T : class
         {
-            return base.Set<T>().Add(entity);
+            return base.Set<T>().Add(entity).Entity;
         }
 
         public Task CommitAsync()
